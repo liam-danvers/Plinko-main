@@ -1,81 +1,103 @@
 import * as THREE from './node_modules/three/build/three.module.js';
 import * as CANNON from './node_modules/cannon-es/dist/cannon-es.js';
-import { buildWorld } from './pinboard.js'
+import { buildPegboard } from './pinboard.js'
+import { buildCamera, buildScene, buildRenderer, buildPhysicsWorld } from './gameWorld.js';
+import { calculateReward } from './pinboardCalculations.js';
+import { createPlayer } from './player.js';
 
-import { calculatePlinkoPosition } from './pinboardPhysics.js';
+let scene = buildScene();
+let camera= buildCamera();
+let renderer = buildRenderer();
+let physicsWorld = buildPhysicsWorld();
+let totalTokens = 100;
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75,  1280/720, 0.1, 1000 );
-// const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+let winnings = 0;
+const gameStatus = { gameStarted: false};
+const rewardIndex = { bucketNumber: null};
+const doOnce = {done: false};
+const hasStarted = {started: false};
+let player;
 
-
-const renderer = new THREE.WebGLRenderer();
-
-// renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setSize( 1280 , 720 );
-document.body.appendChild( renderer.domElement );
-
-const puckGeometry = new THREE.SphereGeometry( 0.5 );
-const puckMaterial = new THREE.MeshBasicMaterial({color: 0xFF0000});
-
-const puck = new THREE.Mesh(puckGeometry, puckMaterial);
-
-scene.add(puck);
-
-function startGame(){
-    // getStartingValue();
-    // console.log(getStartingValue());
-   
-    if(getStartingValue() <= 49){
-        sphereBody.angularVelocity.set(0, 0 ,0.1);
-    }else{
-        sphereBody.angularVelocity.set(0 , 0 ,-0.1);
-    }
-}
 
 document.getElementById('startGame').addEventListener('click', startGame, false);
 
+const totalCreditsElement = document.getElementById('totalCredits');
+const totalWinningsElement = document.getElementById('totalWinnings');
 
-function getStartingValue(){
-    return Math.floor(Math.random() * 100);
+function updateTotalCredits(){
+    if(totalTokens + winnings <= 10){
+        totalCreditsElement.innerHTML = `Total Credits:   ${totalTokens + winnings} (INSUFFICIENT FUNDS)`;
+    }else{
+        totalCreditsElement.innerHTML = `Total Credits:   ${totalTokens + winnings}`;
+    }
 }
 
-camera.position.z = 30;
+function updateTotalWinnings(){
+    totalWinningsElement.innerHTML = `Total Winnings: ${winnings}`;
+}
 
-const physicsWorld = new CANNON.World({
-    // gravity: new CANNON.Vec3(0, -1, 0),
-    gravity: new CANNON.Vec3(0, -9.81, 0),
-});
-let puckMass = 1;
+const {pegs, baskets} = buildPegboard(scene, physicsWorld, gameStatus, rewardIndex);
 
-const sphereBody = new CANNON.Body({
-    mass: puckMass,
-    shape: new CANNON.Sphere(1),
-});
-sphereBody.position.set(0, 5, 0);
-
-
-physicsWorld.addBody(sphereBody);
-let pegs = [];
-let baskets = [];
-buildWorld(scene, physicsWorld, pegs, baskets);
+function startGame(){
+    if(totalTokens >= 10){
+        if(!gameStatus.gameStarted){
+            gameStatus.gameStarted = true;
+            totalTokens=totalTokens-10;
+            const start = Math.floor(Math.random() * 100);
+            let angle = (Math.floor(Math.random() * 60) / 20);
+            if(angle===0){
+                angle= 1;
+            }
+            player = createPlayer(scene, physicsWorld);
+            
+            if(start <= 49){
+                player.body.velocity.set(-angle, -9.81, 0);
+            }else{    
+                player.body.velocity.set(angle, -9.81, 0);
+            }
+            updateTotalCredits();
+        }
+    }
+}
 
 
 function animate() {
     physicsWorld.step(1 / 60);
 	requestAnimationFrame( animate );
     
-    puck.position.copy(sphereBody.position);
-    puck.quaternion.copy(sphereBody.quaternion);
-    // sphereBody.velocity.set(0, -3, 0);
-    
-    if(sphereBody.position.y <= -14){
-        sphereBody.velocity.set(0, 0 ,0);
-        sphereBody.angularVelocity.set(0, 0 ,0);
-        sphereBody.position.set(0, 5, 0);
-    }
+    if(gameStatus.gameStarted){
+        hasStarted.started = true;
+        if(doOnce.done){
+            doOnce.done = false;
+        }
+        if(player.body){
+            if (player.body.position.y <= -20.5) {
+                setTimeout(function(){
+                    scene.remove(player.mesh);
+                    physicsWorld.removeBody(player.body);
+                    gameStatus.gameStarted = false;
+                }, 500);
+            }
 
-	renderer.render( scene, camera );
+            player.mesh.position.copy(player.body.position);
+            player.mesh.quaternion.copy(player.body.quaternion);
+        }
+    }else{
+        if(hasStarted.started){
+            if(doOnce.done === false){
+                if(rewardIndex.bucketNumber != null){
+                    console.log(gameStatus.gameStarted);
+                    let reward = calculateReward(rewardIndex);
+                    console.log(reward);
+                    winnings= winnings + reward;
+                    updateTotalWinnings();
+                    updateTotalCredits();
+                    doOnce.done=true;
+                }
+            }
+        }
+    }
+    renderer.render( scene, camera );
 }
 
 
