@@ -20,7 +20,7 @@
   #mainBody{
     display: flex;
     justify-content: space-between;
-    max-width: 640px;
+    max-width: 500px;
 
   }
 
@@ -30,4 +30,10 @@
     font-size: large;
     font-family: sans-serif;
     gap:1rem;
+  }
+
+  #scoreboard{
+    position: absolute;
+    right: 80px;
+    top: 262px;
   }

@@ -2,57 +2,75 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>My first three.js app</title>
+    <title>Plinko</title>
     <style>
       body {
         margin: 0;
       }
     </style>
-    <script>
-      window.innerHeight = 640;
-      window.innerWidth = 765;
-    </script>
-    <link rel="stylesheet" href="myStyles.css">
+    <link rel="stylesheet" href="myStyles.css" />
     <script type="module" src="/main.js" defer></script>
   </head>
   <body>
     <div id="mainBody">
       <div id="credits">
-
-        <text id="totalCredits" >Total Credits: 100</text>
+        <text id="totalCredits">Total Credits: 100</text>
         <text id="totalWinnings">Total Winnings: 0</text>
       </div>
-      
-      
+
       <div>
         <button id="startGame">Start Game</button>
       </div>
     </div>
-    
-    <input type="radio" id="basic" name="payment" value="Basic" checked>
+
+    <input type="radio" id="basic" name="payment" value="Basic" checked />
     <label for="Basic">BASIC</label>
-    <input type="radio" id="big_money" name="payment" value="Big Money">
+    <input type="radio" id="big_money" name="payment" value="Big Money" />
     <label for="big Money">BIG MONEY</label>
-    
+
     <div id="basicSettings">
-      
+      Bet
+      <input type="number" id="basicSettingInput" value="10" disabled />
     </div>
-    
+
     <div id="bigMoneySettings">
-      Big Money Settings: <input type="number" id="bigMoneySettingInput" min=1 max=50 value=1 >
-      Auto-Play: 
-      <input type="radio" id="autoplay_enabled" name="autoplay" value="autoplay_enabled" >
+      Big Money:
+      <input
+        type="number"
+        id="bigMoneySettingInput"
+        min="1"
+        max="50"
+        value="1"
+      />
+      Auto-Play:
+      <input
+        type="radio"
+        id="autoplay_enabled"
+        name="autoplay"
+        value="autoplay_enabled"
+      />
       <label for="autoplay_enabled">Enable</label>
-      <input type="radio" id="autoplay_disabled" name="autoplay" value="autoplay_disabled" checked >
+      <input
+        type="radio"
+        id="autoplay_disabled"
+        name="autoplay"
+        value="autoplay_disabled"
+        checked
+      />
       <label for="autoplay_disabled">Disabled</label>
     </div>
-    
+
     <div id="popup">
       <p id="rewardMessage"></p>
-      <button id="closePopup" >Close</button>
+      <button id="closePopup">Close</button>
     </div>
-    
-    
-   
+
+    <div id="scoreboard">
+      <p>10</p>
+      <p>5</p>
+      <p>2</p>
+      <p>1</p>
+      <p>0</p>
+    </div>
   </body>
 </html>

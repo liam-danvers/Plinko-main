@@ -19,7 +19,7 @@ export function buildCamera(){
 
 export function buildRenderer(){
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize( 640 , 720 );
+    renderer.setSize( 500 , 500 );
     document.body.appendChild( renderer.domElement );
     return renderer;
 }

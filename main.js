@@ -35,6 +35,7 @@ const bigMoneyRadio = document.getElementById('big_money');
 const basicSettings = document.getElementById('basicSettings');
 const bigMoneySettings = document.getElementById('bigMoneySettings');
 const popupMessage =  document.getElementById('popup');
+const betBasicInput =  document.getElementById('basicSettingInput');
 const betInput =  document.getElementById('bigMoneySettingInput');
 const autoplayEnabledRadio =  document.getElementById('autoplay_enabled');
 const autoplayDisabledRadio =  document.getElementById('autoplay_disabled');
@@ -221,7 +222,7 @@ function prepareEndstate(){
 function movePlayer(){
     if(stepCount.steps < 8){
         if(player.body.velocity.x === 0){
-            if(player.body.position.y <= 2 - stepCount.steps*4 && player.body.position.y > 1.8 - stepCount.steps*4){
+            if(player.body.position.y <= 6 - stepCount.steps*4 && player.body.position.y > 5.8 - stepCount.steps*4){
                 shouldMove.move = true;
                 choosePath();
             }
@@ -236,7 +237,7 @@ function movePlayer(){
 }
 
 function createBaseReward(){
-    let reward = calculateReward(rewardIndex, true, betInput.value);
+    let reward = calculateReward(rewardIndex, true, 10);
     createRewardMessage(reward);
     winnings = winnings + reward;
     totalTokens = totalTokens + reward;
@@ -275,7 +276,7 @@ function basicGame(){
             physicsWorld.gravity.set(0, 0, 0);
             movePlayer();
             
-            if (player.body.position.y <= -32) {
+            if (player.body.position.y <= -28) {
                 player.body.isTrigger= false;
                 prepareEndstate();
             }
@@ -299,7 +300,7 @@ function physicsGame(){
         disabledButtonsOnStart();
         if(player.body){
             physicsWorld.gravity.set(0, -9.81, 0);
-            if (player.body.position.y <= -32) {
+            if (player.body.position.y <= -28) {
                 prepareEndstate();
             }
               

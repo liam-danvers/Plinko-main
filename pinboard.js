@@ -5,6 +5,7 @@ export function buildPegboard( scene, world, gameStatus, rewardIndex ){
     const pegs = buildPegs(scene, world);
     const baskets = buildBaskets(scene, world, gameStatus, rewardIndex);
     buildWorldBorder(scene, world);
+    buildScoreboard(scene, world);
     return {pegs, baskets};
 }
 
@@ -32,7 +33,7 @@ function buildPegs(scene, world){
                     shape: new CANNON.Sphere(0.4),
                 });
                 const x = col * 5.25 - row * 2.625;
-                const y = 2 -row * 4;
+                const y = 6 -row * 4;
                 pinMesh.position.set(x, y, 0);
                 pinBody.position.copy(pinMesh.position);
                 scene.add(pinMesh);
@@ -66,7 +67,7 @@ function buildBaskets(scene, world, gameStatus, rewardIndex) {
         });
         boxBody.addShape(boxShape);
         
-        basketMesh.position.set((-21) + (i*5.3), -34.5, 0);
+        basketMesh.position.set((-21) + (i*5.3), -29.5, 0);
         
         boxBody.position.copy(basketMesh.position);
         world.addBody(boxBody);
@@ -92,28 +93,25 @@ function handleBucketCollision(event, baskets, rewardIndex) {
 }
 
 function buildWorldBorder(scene, world){
-    const verticalGeometry = new THREE.BoxGeometry(1, 70, 1);
+    const verticalGeometry = new THREE.BoxGeometry(1, 60, 1);
     const horizontalGeometry = new THREE.BoxGeometry(47, 1, 1);
-    const wallMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+    const wallMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     
     
     const leftVerticalMesh = new THREE.Mesh(verticalGeometry, wallMaterial);
     const rightVerticalMesh = new THREE.Mesh(verticalGeometry, wallMaterial);
-    // const bottomHorizontalMesh = new THREE.Mesh(horizontalGeometry, wallMaterial);
     const topHorizontalMesh = new THREE.Mesh(horizontalGeometry, wallMaterial);
 
     scene.add(leftVerticalMesh);
     scene.add(rightVerticalMesh);
-    // scene.add(bottomHorizontalMesh);
     scene.add(topHorizontalMesh);
 
     
     leftVerticalMesh.position.set(-23.5, 0, 0);
     rightVerticalMesh.position.set(23.5, 0, 0);
-    // bottomHorizontalMesh.position.set(0, -23, 0);
-    topHorizontalMesh.position.set(0, 34.5, 0);
+    topHorizontalMesh.position.set(0,29.5, 0);
 
-    const verticalWallShape = new CANNON.Box(new CANNON.Vec3(0.5, 35, 1)); 
+    const verticalWallShape = new CANNON.Box(new CANNON.Vec3(0.5, 32.5, 1)); 
     const horizontalWallShape = new CANNON.Box(new CANNON.Vec3(26, 0.5, 1)); 
     
     const leftVerticalBody = new CANNON.Body({ 
@@ -124,10 +122,7 @@ function buildWorldBorder(scene, world){
         mass: 0,
         shape: verticalWallShape,
     });
-    // const bottomHorizontalBody = new CANNON.Body({ 
-    //     mass: 0,
-    //     shape: horizontalWallShape,
-    // });
+  
     const topHorizontalBody = new CANNON.Body({ 
         mass: 0,
         shape: horizontalWallShape,
@@ -135,17 +130,14 @@ function buildWorldBorder(scene, world){
 
     leftVerticalBody.addShape(verticalWallShape);
     rightVerticalBody.addShape(verticalWallShape);
-    // bottomHorizontalBody.addShape(horizontalWallShape);
     topHorizontalBody.addShape(horizontalWallShape);
 
     leftVerticalBody.position.copy(leftVerticalMesh.position);
     rightVerticalBody.position.copy(rightVerticalMesh.position);
-    // bottomHorizontalBody.position.copy(bottomHorizontalMesh.position);
     topHorizontalBody.position.copy(topHorizontalMesh.position);
     
     world.addBody(leftVerticalBody);
     world.addBody(rightVerticalBody);
-    // world.addBody(bottomHorizontalBody);
     world.addBody(topHorizontalBody);
 
 
@@ -175,4 +167,19 @@ function buildWalls(scene, world){
     }
   
     return(newWalls);
+}
+
+function buildScoreboard(scene, world){
+    const scoreboardGeometry = new THREE.BoxGeometry(3, 1, 1);
+    const colors = [0x0000FF,  0x66FF00, 0xFFFF00, 0xFF6600, 0xFF0000];
+    
+    for(let i = 0; i <= 4; i++){
+        const scoreboardMaterial = new THREE.MeshBasicMaterial({ color: colors[i]});
+        const scoreboardMesh = new THREE.Mesh(scoreboardGeometry, scoreboardMaterial);
+        scene.add(scoreboardMesh);
+        scoreboardMesh.position.set( 30, 10 - i * 5.4, 0);
+        
+        
+    }
+  
 }
