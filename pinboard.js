@@ -1,23 +1,28 @@
 import * as THREE from './node_modules/three/build/three.module.js';
 import * as CANNON from './node_modules/cannon-es/dist/cannon-es.js';
 
-
 export function buildPegboard( scene, world, gameStatus, rewardIndex ){
     const pegs = buildPegs(scene, world);
     const baskets = buildBaskets(scene, world, gameStatus, rewardIndex);
-    const walls = buildWalls(scene, world);
     buildWorldBorder(scene, world);
     return {pegs, baskets};
 }
 
 function buildPegs(scene, world){
     const pinGeometry = new THREE.CircleGeometry( 0.8);
-    const pinMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
+    const loader = new THREE.TextureLoader();
+    
+    let pinTexture =  loader.load(
+        './metal.png',
+    );
+    let pinMaterial = new THREE.MeshBasicMaterial( {
+        map: pinTexture
+    });
     let newPegs =[];
 
-    for (let row = 0; row < 7; row++) {
+    for (let row = 0; row < 9; row++) {
         for (let col = 0; col <= row; col++) {
-            if(row === 6 && col === 3)
+            if(row === row.length - 1 && col === 3)
             {
                 continue;
             }else{
@@ -26,8 +31,8 @@ function buildPegs(scene, world){
                     mass: 0,
                     shape: new CANNON.Sphere(0.4),
                 });
-                const x = col * 5.25 - row * 2.65;
-                const y = 7 -row * 4;
+                const x = col * 5.25 - row * 2.625;
+                const y = 2 -row * 4;
                 pinMesh.position.set(x, y, 0);
                 pinBody.position.copy(pinMesh.position);
                 scene.add(pinMesh);
@@ -41,16 +46,18 @@ function buildPegs(scene, world){
 
 function buildBaskets(scene, world, gameStatus, rewardIndex) {
     
-    const basketGeometry = new THREE.BoxGeometry(3, 1, 1);
-    const basketMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-
+    const basketGeometry = new THREE.BoxGeometry(4.5, 1, 1);
+    
     let newBaskets = [];
-
+    const colors = [0x0000FF,  0x66FF00, 0xFFFF00, 0xFF6600, 0xFF0000, 0xFF6600, 0xFFFF00, 0x66FF00, 0x0000FF];
+    
     for(let i = 0; i <= 8; i++){
+        let customColor = colors[i];
+        const basketMaterial = new THREE.MeshBasicMaterial({ color: customColor });
         const basketMesh = new THREE.Mesh(basketGeometry, basketMaterial);
         scene.add(basketMesh);
         
-        const boxShape = new CANNON.Box(new CANNON.Vec3(1.5, 0.5, 0.5)); 
+        const boxShape = new CANNON.Box(new CANNON.Vec3(2.25, 0.5, 0.5)); 
         
         const boxBody = new CANNON.Body({ 
             mass: 0,
@@ -59,7 +66,7 @@ function buildBaskets(scene, world, gameStatus, rewardIndex) {
         });
         boxBody.addShape(boxShape);
         
-        basketMesh.position.set((-16) + (i*4), -23, 0);
+        basketMesh.position.set((-21) + (i*5.3), -34.5, 0);
         
         boxBody.position.copy(basketMesh.position);
         world.addBody(boxBody);
@@ -85,29 +92,29 @@ function handleBucketCollision(event, baskets, rewardIndex) {
 }
 
 function buildWorldBorder(scene, world){
-    const verticalGeometry = new THREE.BoxGeometry(1, 47, 1);
-    const horizontalGeometry = new THREE.BoxGeometry(37, 1, 1);
+    const verticalGeometry = new THREE.BoxGeometry(1, 70, 1);
+    const horizontalGeometry = new THREE.BoxGeometry(47, 1, 1);
     const wallMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
     
     
     const leftVerticalMesh = new THREE.Mesh(verticalGeometry, wallMaterial);
     const rightVerticalMesh = new THREE.Mesh(verticalGeometry, wallMaterial);
-    const bottomHorizontalMesh = new THREE.Mesh(horizontalGeometry, wallMaterial);
+    // const bottomHorizontalMesh = new THREE.Mesh(horizontalGeometry, wallMaterial);
     const topHorizontalMesh = new THREE.Mesh(horizontalGeometry, wallMaterial);
 
     scene.add(leftVerticalMesh);
     scene.add(rightVerticalMesh);
-    scene.add(bottomHorizontalMesh);
+    // scene.add(bottomHorizontalMesh);
     scene.add(topHorizontalMesh);
 
     
-    leftVerticalMesh.position.set(-18, 0, 0);
-    rightVerticalMesh.position.set(18, 0, 0);
-    bottomHorizontalMesh.position.set(0, -23, 0);
-    topHorizontalMesh.position.set(0, 24, 0);
+    leftVerticalMesh.position.set(-23.5, 0, 0);
+    rightVerticalMesh.position.set(23.5, 0, 0);
+    // bottomHorizontalMesh.position.set(0, -23, 0);
+    topHorizontalMesh.position.set(0, 34.5, 0);
 
-    const verticalWallShape = new CANNON.Box(new CANNON.Vec3(0.5, 23.5, 1)); 
-    const horizontalWallShape = new CANNON.Box(new CANNON.Vec3(18.5, 0.5, 1)); 
+    const verticalWallShape = new CANNON.Box(new CANNON.Vec3(0.5, 35, 1)); 
+    const horizontalWallShape = new CANNON.Box(new CANNON.Vec3(26, 0.5, 1)); 
     
     const leftVerticalBody = new CANNON.Body({ 
         mass: 0,
@@ -117,10 +124,10 @@ function buildWorldBorder(scene, world){
         mass: 0,
         shape: verticalWallShape,
     });
-    const bottomHorizontalBody = new CANNON.Body({ 
-        mass: 0,
-        shape: horizontalWallShape,
-    });
+    // const bottomHorizontalBody = new CANNON.Body({ 
+    //     mass: 0,
+    //     shape: horizontalWallShape,
+    // });
     const topHorizontalBody = new CANNON.Body({ 
         mass: 0,
         shape: horizontalWallShape,
@@ -128,17 +135,17 @@ function buildWorldBorder(scene, world){
 
     leftVerticalBody.addShape(verticalWallShape);
     rightVerticalBody.addShape(verticalWallShape);
-    bottomHorizontalBody.addShape(horizontalWallShape);
+    // bottomHorizontalBody.addShape(horizontalWallShape);
     topHorizontalBody.addShape(horizontalWallShape);
 
     leftVerticalBody.position.copy(leftVerticalMesh.position);
     rightVerticalBody.position.copy(rightVerticalMesh.position);
-    bottomHorizontalBody.position.copy(bottomHorizontalMesh.position);
+    // bottomHorizontalBody.position.copy(bottomHorizontalMesh.position);
     topHorizontalBody.position.copy(topHorizontalMesh.position);
     
     world.addBody(leftVerticalBody);
     world.addBody(rightVerticalBody);
-    world.addBody(bottomHorizontalBody);
+    // world.addBody(bottomHorizontalBody);
     world.addBody(topHorizontalBody);
 
 

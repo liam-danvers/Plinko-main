@@ -11,19 +11,30 @@ function calculatePlinkoPosition(rows, column, probabilityRight) {
     return probability;
 }
 
-export function calculateReward(rewardIndex){    
-    let rewardResults = calculateRewardValue();
-    return Math.round(rewardResults[rewardIndex.bucketNumber]);
+export function calculateReward(rewardIndex, basic, bet){    
+    if(basic){
+        let rewardResults = calculateBaseRewardValue();
+        return Math.round(rewardResults[rewardIndex.bucketNumber]);
+    }else{
+        let rewardResults = calculateBaseRewardValue();
+        let newReward = rewardResults[rewardIndex.bucketNumber] * (bet / 10);
+        return Math.round( newReward);
+    }
 }
 
 function calculateRewardValue(){
-    const columns = 8; // Number of columns in the Plinko board
+    const columns = 10; // Number of columns in the Plinko board
     const probabilityRight = 0.5;
     let results = [];
     
     for(let i = 0; i <= columns; i++){
-        let invertedVal = (1 / calculatePlinkoPosition(columns, i, probabilityRight)) * 0.9;
+        let invertedVal = (1 / calculatePlinkoPosition(columns, i, probabilityRight));
         results.push(invertedVal);
     }
+    return results;
+}
+
+function calculateBaseRewardValue(){
+    let results = [10, 5, 2, 1, 0, 1, 2, 5, 10 ];  
     return results;
 }

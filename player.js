@@ -3,9 +3,16 @@ import * as CANNON from './node_modules/cannon-es/dist/cannon-es.js';
 
 export function createPlayer(scene, physicsWorld) {
     const puckGeometry = new THREE.SphereGeometry(0.5);
-    const puckMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
+    const loader = new THREE.TextureLoader();
+    
+    // load a resource
+    let puckTexture =  loader.load(
+        './marbel.png',
+    );
+    let puckMaterial = new THREE.MeshBasicMaterial( {
+        map: puckTexture
+    });
     const puck = new THREE.Mesh(puckGeometry, puckMaterial);
-
     scene.add(puck);
     let puckMass = 1;
 
@@ -14,7 +21,7 @@ export function createPlayer(scene, physicsWorld) {
         mass: puckMass,
         shape: puckShape, // Use the same radius as the geometry
     });
-    puckBody.position.set(0, 12, 0);
+    puckBody.position.set(0, 10, 0);
  
     physicsWorld.addBody(puckBody);
     return { mesh: puck, body: puckBody };
