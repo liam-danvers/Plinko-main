@@ -139,7 +139,7 @@ function choosePath(){
 
 //Reset state variables and prepare for a new game
 function prepareEndstate(){
-    if(autoplayDisabledRadio.checked){
+    if(autoplayDisabledRadio.checked || basicRadio.checked){
         setTimeout(function(){
             if(player!= null){
                 scene.remove(player.mesh);
@@ -202,6 +202,7 @@ function createBaseReward(){
     updateTotalWinnings();
     updateTotalCredits();
     doOnce.done=true;
+    gameOver.over= true;
 }
 
 //Create a reward with a variable bet
@@ -297,7 +298,7 @@ function basicGame(){
                 player.body.isTrigger= false;
                 prepareEndstate();
             }
-               
+            
             player.mesh.position.copy(player.body.position);
             player.mesh.quaternion.copy(player.body.quaternion);
         }
