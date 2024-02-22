@@ -1,3 +1,4 @@
+// I wanted to use this to vary the payout
 function calculatePlinkoPosition(rows, column, probabilityRight) {
     function binomialCoefficient(n, k) {
         if (k === 0 || k === n) {
@@ -17,13 +18,14 @@ export function calculateReward(rewardIndex, basic, bet){
         return Math.round(rewardResults[rewardIndex.bucketNumber]);
     }else{
         let rewardResults = calculateBaseRewardValue();
-        let newReward = rewardResults[rewardIndex.bucketNumber] * (bet / 10);
+        let newReward = rewardResults[rewardIndex.bucketNumber] * (bet / 10) * 2;
         return Math.round( newReward);
     }
 }
 
+//This was the formula I was going to use but didn't have the time to implement it correctly
 function calculateRewardValue(){
-    const columns = 10; // Number of columns in the Plinko board
+    const columns = 10; 
     const probabilityRight = 0.5;
     let results = [];
     

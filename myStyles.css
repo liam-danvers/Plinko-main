@@ -1,6 +1,6 @@
 #startGame{
     font-family: sans-serif;
-    font-size: 32px;
+    font-size: 28px;
     display: flex;
 }
 
@@ -21,6 +21,15 @@
     display: flex;
     justify-content: space-between;
     max-width: 500px;
+    max-height: 600px;
+
+  }
+
+  #bigBody{
+    max-width: 500px;
+    height: 600px;
+    max-height: 600px;
+    min-height: 600px;
 
   }
 
@@ -34,6 +43,6 @@
 
   #scoreboard{
     position: absolute;
-    right: 80px;
+    left: 420px;
     top: 262px;
   }

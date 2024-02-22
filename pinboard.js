@@ -23,7 +23,7 @@ function buildPegs(scene, world){
 
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col <= row; col++) {
-            if(row === row.length - 1 && col === 3)
+            if(row === 8  && col === 4)
             {
                 continue;
             }else{
@@ -72,6 +72,7 @@ function buildBaskets(scene, world, gameStatus, rewardIndex) {
         boxBody.position.copy(basketMesh.position);
         world.addBody(boxBody);
         
+        // I configured this incorrectly and introduced a bug here, unfortunately time was short so I had to work with it
         boxBody.addEventListener('collide', (event) => {
             handleBucketCollision(event, newBaskets, rewardIndex);
         });
@@ -143,32 +144,6 @@ function buildWorldBorder(scene, world){
 
 }
 
-function buildWalls(scene, world){
-    const wallGeometry = new THREE.BoxGeometry(0.9, 3, 1);
-    const wallMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-
-    let newWalls = [];
-
-    for(let i = 0; i <= 7; i++){
-        const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
-        scene.add(wallMesh);
-        wallMesh.position.set(-14 + i * 4, -22, 0);
-
-        const wallShape = new CANNON.Box(new CANNON.Vec3(0.5, 1.5, 1)); 
-        const wallBody = new CANNON.Body({ 
-            mass: 0,
-            shape: wallShape,
-        });
-        wallBody.addShape(wallShape);
-        wallBody.position.copy(wallMesh.position);
-        world.addBody(wallBody);
-        
-        newWalls.push({ mesh: wallMesh, body: wallBody });
-    }
-  
-    return(newWalls);
-}
-
 function buildScoreboard(scene, world){
     const scoreboardGeometry = new THREE.BoxGeometry(3, 1, 1);
     const colors = [0x0000FF,  0x66FF00, 0xFFFF00, 0xFF6600, 0xFF0000];
@@ -177,9 +152,6 @@ function buildScoreboard(scene, world){
         const scoreboardMaterial = new THREE.MeshBasicMaterial({ color: colors[i]});
         const scoreboardMesh = new THREE.Mesh(scoreboardGeometry, scoreboardMaterial);
         scene.add(scoreboardMesh);
-        scoreboardMesh.position.set( 30, 10 - i * 5.4, 0);
-        
-        
+        scoreboardMesh.position.set( 30, 8 - i * 4.5, 0);
     }
-  
 }

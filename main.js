@@ -5,6 +5,7 @@ import { buildCamera, buildScene, buildRenderer, buildPhysicsWorld } from './gam
 import { calculateReward } from './pinboardCalculations.js';
 import { createPlayer } from './player.js';
 
+//Variables
 let scene = buildScene();
 let camera= buildCamera();
 let renderer = buildRenderer();
@@ -20,7 +21,8 @@ const shouldMove = { move: false };
 const stepCount = { steps: 0 };
 const columnPosition = {column: 0};
 const markedPostion = {spot : 0};
-const gameComplete = {finished: false};
+const shouldRestart = {restart : false};
+const gameOver = {over : true};
 
 let player;
 
@@ -40,19 +42,17 @@ const betInput =  document.getElementById('bigMoneySettingInput');
 const autoplayEnabledRadio =  document.getElementById('autoplay_enabled');
 const autoplayDisabledRadio =  document.getElementById('autoplay_disabled');
 
+const {pegs, baskets} = buildPegboard(scene, physicsWorld, gameStatus, rewardIndex);
+
 document.getElementById('closePopup').addEventListener('click', closePopup, false);
 
-
-// Attach event listeners to radio buttons
 basicRadio.addEventListener('change', handleRadioButtonChange);
 bigMoneyRadio.addEventListener('change', handleRadioButtonChange);
 autoplayDisabledRadio.addEventListener('change', handleAutoPlayChange);
 autoplayEnabledRadio.addEventListener('change', handleAutoPlayChange);
 betInput.addEventListener('change', updateTotalCredits);
 
-
-
-
+//UI controls
 function handleRadioButtonChange() {
     if (basicRadio.checked) {
         basicSettings.style.display = 'block';
@@ -80,10 +80,9 @@ function closePopup() {
     popupMessage.style.display = 'none';
 }
 
-
 function updateTotalCredits(){
     if( betInput.value > totalTokens ){
-        totalCreditsElement.innerHTML = `Total Credits:   ${totalTokens} (INSUFFICIENT FUNDS)`;
+        totalCreditsElement.innerHTML = `Total Credits:   ${totalTokens} (INSUFFICIENT FUNDS)`;  
     }else{
         totalCreditsElement.innerHTML = `Total Credits:   ${totalTokens}`;
     }
@@ -105,60 +104,8 @@ function createMessage(message){
     rewardMessageElement.innerHTML = `${message}`;
 }
 
-const {pegs, baskets} = buildPegboard(scene, physicsWorld, gameStatus, rewardIndex);
 
-function startGame() {
-    if (totalTokens >= 10 && totalTokens !== 0) {
-        if (!gameStatus.gameStarted) {
-            gameStatus.gameStarted = true;
-            player = createPlayer(scene, physicsWorld);
-            
-            if (basicRadio.checked) {
-                totalTokens -= 10;
-                player.body.velocity.set(0, -9.81, 0);
-            } else {
-                totalTokens -= betInput.value;
-                const startPos = Math.floor(Math.random() * 100);
-                const angle = (Math.floor(Math.random() * 60) / 20) || 0.5;
-                const direction = startPos <= 49 ? -1 : 1;
-                player.body.velocity.set(direction * angle, -9.81, 0);
-            }
-
-            updateTotalCredits();
-            gameComplete.finished = false;
-        }
-    } else {
-        createMessage(`Unable to place bet, insufficient funds.`);
-        showPopup();
-    }
-}
-
-
-function animate() {
-    physicsWorld.step(1 / 60);
-	requestAnimationFrame( animate );
-    
-    if(basicRadio.checked){
-        basicGame();
-    }else{
-        if(autoplayDisabledRadio.checked){
-            physicsGame();
-        }else{
-            if(gameComplete.finished){
-                gameComplete.finished = false;
-                startGame();
-            }
-            physicsGame();
-        }
-    }
-    renderer.render( scene, camera );
-}
-    
-
-handleRadioButtonChange();
-handleAutoPlayChange();
-animate();
-    
+//Choose path player should move based on random numbers
 function choosePath(){
     if(shouldMove.move){
         const step = Math.floor(Math.random() * 100);
@@ -190,35 +137,45 @@ function choosePath(){
     }
 }
 
+//Reset state variables and prepare for a new game
 function prepareEndstate(){
-    let timer;
     if(autoplayDisabledRadio.checked){
-        clearTimeout(timer);
-        timer = setTimeout(function(){
-            scene.remove(player.mesh);
-            physicsWorld.removeBody(player.body);
-            gameStatus.gameStarted = false;
-            stepCount.steps = 0;
-            columnPosition.column = 0;
-            basicRadio.disabled= false;
-            bigMoneyRadio.disabled= false;
-            showPopup();
+        setTimeout(function(){
+            if(player!= null){
+                scene.remove(player.mesh);
+                physicsWorld.removeBody(player.body);
+                player = null;
+                gameOver.over = false;
+                gameStatus.gameStarted = false;
+                stepCount.steps = 0;
+                columnPosition.column = 0;
+                basicRadio.disabled= false;
+                bigMoneyRadio.disabled= false;
+                doOnce.done = false;
+                showPopup();
+            }
         }, 100);
     }else{
-        clearTimeout(timer);
-        timer = setTimeout(function(){
-            scene.remove(player.mesh);
-            physicsWorld.removeBody(player.body);
-            gameStatus.gameStarted = false;
-            stepCount.steps = 0;
-            columnPosition.column = 0;
-            basicRadio.disabled= false;
-            bigMoneyRadio.disabled= false;
-            gameComplete.finished = true;
-        }, 500);
+        setTimeout(function(){
+            if(player != null){
+                scene.remove(player.mesh);
+                physicsWorld.removeBody(player.body);
+                player = null;
+                gameOver.over = false;
+                shouldRestart.restart = true;
+                gameStatus.gameStarted = false;
+                stepCount.steps = 0;
+                columnPosition.column = 0;
+                basicRadio.disabled= false;
+                bigMoneyRadio.disabled= false;
+                doOnce.done = false;
+            }
+        }, 10);
+        
     }
 }
 
+//Move player in a non-physics based game
 function movePlayer(){
     if(stepCount.steps < 8){
         if(player.body.velocity.x === 0){
@@ -236,6 +193,7 @@ function movePlayer(){
     }
 }
 
+//Create a reward with a fixed bet
 function createBaseReward(){
     let reward = calculateReward(rewardIndex, true, 10);
     createRewardMessage(reward);
@@ -246,6 +204,7 @@ function createBaseReward(){
     doOnce.done=true;
 }
 
+//Create a reward with a variable bet
 function createReward(){
     let reward = calculateReward(rewardIndex, false, betInput.value);
     createRewardMessage(reward);
@@ -256,19 +215,77 @@ function createReward(){
     doOnce.done=true;
 }
 
+//Helper function
 function disabledButtonsOnStart(){
     basicRadio.disabled= true;
     bigMoneyRadio.disabled= true;
-    hasStarted.started = true;
 
-    if(doOnce.done){
+    if(doOnce.done === true){
         doOnce.done = false;
     }
 }
 
+//Game start
+function startGame() {
+    shouldRestart.restart = false;
+    if(gameOver.over === true){
 
+        if (totalTokens >= 10 && totalTokens !== 0) {
+            if (!gameStatus.gameStarted) {
+                hasStarted.started = true;
+                gameStatus.gameStarted = true;
+                player = createPlayer(scene, physicsWorld);
+                if (basicRadio.checked) {
+                    totalTokens -= betBasicInput.value;
+                    player.body.velocity.set(0, -9.81, 0);
+                } else {
+                    totalTokens -= betInput.value;
+                    const startPos = Math.floor(Math.random() * 100);
+                    const angle = (Math.floor(Math.random() * 40) / 20) || 0.5;
+                    const direction = startPos <= 49 ? -0.9 : 0.9;
+                    player.body.velocity.set(direction * angle, -9.81, 0);
+                }
+                
+                updateTotalCredits();
+            }
+        } else {
+            createMessage(`Unable to place bet, insufficient funds.`);
+            showPopup();
+        }
+    }
+}
+
+//Game loop
+function animate() {
+    physicsWorld.step(1 / 60);
+	requestAnimationFrame( animate );
+    
+    if(basicRadio.checked){
+        basicGame();
+    }else{
+        if(autoplayDisabledRadio.checked){
+            physicsGame();
+        }else{
+            if(player===null && shouldRestart.restart === true){
+                
+                startGame();
+            }
+            physicsGame();
+        }
+    }
+    renderer.render( scene, camera );
+}
+    
+
+handleRadioButtonChange();
+handleAutoPlayChange();
+animate();
+
+
+
+//Main game loop for base game and game with physics enabled
 function basicGame(){
-    if(gameStatus.gameStarted){
+    if(gameStatus.gameStarted === true){
         disabledButtonsOnStart();
         
         if(player.body){
@@ -285,7 +302,7 @@ function basicGame(){
             player.mesh.quaternion.copy(player.body.quaternion);
         }
     }else{
-        if(hasStarted.started){
+        if(hasStarted.started === true){
             if(doOnce.done === false){
                 if(rewardIndex.bucketNumber != null){
                     createBaseReward();
@@ -296,22 +313,27 @@ function basicGame(){
 }
 
 function physicsGame(){
-    if(gameStatus.gameStarted){
+    if(gameStatus.gameStarted === true){
         disabledButtonsOnStart();
+        hasStarted.started = true;
         if(player.body){
             physicsWorld.gravity.set(0, -9.81, 0);
-            if (player.body.position.y <= -28) {
+            if (player.body.position.y <= -28.5) {
                 prepareEndstate();
             }
-              
+            
             player.mesh.position.copy(player.body.position);
             player.mesh.quaternion.copy(player.body.quaternion);
         }
     }else{
-        if(hasStarted.started){
+        if(hasStarted.started === true){
             if(doOnce.done === false){
                 if(rewardIndex.bucketNumber != null){
                     createReward();
+                    gameOver.over = true;
+                    if(autoplayEnabledRadio.checked){
+                        startGame();
+                    }
                 }
             }
         }

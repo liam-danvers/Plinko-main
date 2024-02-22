@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="myStyles.css" />
     <script type="module" src="/main.js" defer></script>
   </head>
-  <body>
+  <body id="bigBody">
     <div id="mainBody">
       <div id="credits">
         <text id="totalCredits">Total Credits: 100</text>
@@ -25,7 +25,7 @@
 
     <input type="radio" id="basic" name="payment" value="Basic" checked />
     <label for="Basic">BASIC</label>
-    <input type="radio" id="big_money" name="payment" value="Big Money" />
+    <input type="radio" id="big_money" name="payment" value="Big Money"/>
     <label for="big Money">BIG MONEY</label>
 
     <div id="basicSettings">
@@ -33,14 +33,15 @@
       <input type="number" id="basicSettingInput" value="10" disabled />
     </div>
 
+    <!-- Autoplay disabled due to a bug causing it to bet endlessly and spend all your money :(  -->
     <div id="bigMoneySettings">
       Big Money:
       <input
         type="number"
         id="bigMoneySettingInput"
-        min="1"
+        min="10"
         max="50"
-        value="1"
+        value="10"
       />
       Auto-Play:
       <input
@@ -48,6 +49,7 @@
         id="autoplay_enabled"
         name="autoplay"
         value="autoplay_enabled"
+        
       />
       <label for="autoplay_enabled">Enable</label>
       <input
@@ -56,6 +58,7 @@
         name="autoplay"
         value="autoplay_disabled"
         checked
+       
       />
       <label for="autoplay_disabled">Disabled</label>
     </div>
